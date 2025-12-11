@@ -1,0 +1,59 @@
+services:
+  gluetun:
+    image: {{ gluetun_image }}
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      - media_net
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=openvpn
+      - OPENVPN_CUSTOM_CONFIG=/gluetun/pia-us3.ovpn
+      - OPENVPN_USER={{ vault_pia_username }}
+      - OPENVPN_PASSWORD={{ vault_pia_password }}
+      - TZ={{ media_timezone }}
+    ports:
+      - "8080:8080"      # qBittorrent Web UI
+      - "13378:80"       # Audiobookshelf
+    volumes:
+      - {{ media_base_dir }}/gluetun:/gluetun
+    restart: unless-stopped
+
+  qbittorrent:
+    image: {{ qbittorrent_image }}
+    container_name: qbittorrent
+    depends_on:
+      - gluetun
+    network_mode: "service:gluetun"
+    environment:
+      - PUID={{ media_puid }}
+      - PGID={{ media_pgid }}
+      - TZ={{ media_timezone }}
+      - WEBUI_PORT={{ qbittorrent_webui_port }}
+    volumes:
+      - {{ media_base_dir }}/qbittorrent/config:/config
+      - {{ qbittorrent_downloads_dir }}:/downloads
+    restart: unless-stopped
+
+  audiobookshelf:
+    image: {{ audiobookshelf_image }}
+    container_name: audiobookshelf
+    depends_on:
+      - gluetun
+    network_mode: "service:gluetun"
+    environment:
+      - PUID={{ media_puid }}
+      - PGID={{ media_pgid }}
+      - TZ={{ media_timezone }}
+    volumes:
+      - {{ media_base_dir }}/audiobookshelf/config:/config
+      - {{ media_base_dir }}/audiobookshelf/metadata:/metadata
+      - {{ audiobookshelf_library_dir }}:/audiobooks
+    restart: unless-stopped
+
+networks:
+  media_net:
+    driver: bridge

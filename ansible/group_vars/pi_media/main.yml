@@ -1,0 +1,13 @@
+---
+# Host specific overrides for the Pi media box
+ansible_user: gene
+
+# Gluetun basic config
+pia_country: "United States"
+pia_region: "US West"
+
+# Networking
+media_timezone: "America/Los_Angeles"
+
+# Where to put the docker-compose.yml on the Pi
+media_stack_compose_path: "{{ media_base_dir }}/docker-compose.yml"

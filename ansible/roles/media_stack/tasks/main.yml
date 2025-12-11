@@ -1,0 +1,58 @@
+---
+- name: Ensure base directory for media stack exists
+  ansible.builtin.file:
+    path: "{{ media_base_dir }}"
+    state: directory
+    owner: "{{ media_puid }}"
+    group: "{{ media_pgid }}"
+    mode: "0755"
+
+- name: Ensure content directories exist under media mount
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ media_puid }}"
+    group: "{{ media_pgid }}"
+    mode: "0775"
+  loop:
+    - "{{ qbittorrent_downloads_dir }}"
+    - "{{ audiobookshelf_library_dir }}"
+
+- name: Ensure gluetun config directory exists
+  ansible.builtin.file:
+    path: "{{ media_base_dir }}/gluetun"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Install PIA OpenVPN config for gluetun
+  ansible.builtin.copy:
+    src: "pia-us3.ovpn"
+    dest: "{{ media_base_dir }}/gluetun/pia-us3.ovpn"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Render docker-compose.yml for media stack
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ media_stack_compose_path }}"
+    owner: "{{ media_puid }}"
+    group: "{{ media_pgid }}"
+    mode: "0644"
+
+- name: Deploy media stack with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ media_base_dir }}"
+    files:
+      - "{{ media_stack_compose_path | basename }}"
+    project_name: "{{ media_stack_project_name }}"
+    state: present
+  register: compose_result
+
+- name: Show useful URLs
+  ansible.builtin.debug:
+    msg:
+      - "qBittorrent Web UI: http://{{ inventory_hostname }}:{{ qbittorrent_webui_port }}"
+      - "Audiobookshelf: http://{{ inventory_hostname }}:{{ audiobookshelf_port }}"

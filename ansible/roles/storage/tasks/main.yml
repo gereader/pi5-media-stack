@@ -1,0 +1,28 @@
+---
+- name: Ensure media mount point directory exists
+  ansible.builtin.file:
+    path: "{{ media_mount_point }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure media drive is present in fstab
+  ansible.builtin.mount:
+    path: "{{ media_mount_point }}"
+    src: "UUID={{ media_device_uuid }}"
+    fstype: "{{ media_fs_type }}"
+    opts: "{{ media_mount_opts }}"
+    state: present
+
+- name: Try to mount media drive if present
+  ansible.builtin.mount:
+    path: "{{ media_mount_point }}"
+    src: "UUID={{ media_device_uuid }}"
+    fstype: "{{ media_fs_type }}"
+    opts: "{{ media_mount_opts }}"
+    state: mounted
+  register: media_mount_result
+  failed_when: >
+    media_mount_result is failed
+    and 'special device' not in (media_mount_result.msg | default(''))

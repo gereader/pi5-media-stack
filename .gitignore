@@ -1,0 +1,21 @@
+# Ansible host-specific secrets
+ansible/group_vars/pi_media/vault.yml
+vault-password.txt
+inventory_secrets.ini
+
+# Environment / local config
+.env
+.venv
+
+# PIA OpenVPN config files
+ansible/files/pia-*.ovpn
+
+# Ansible artifacts
+*.retry
+
+# Python cruft
+__pycache__/
+*.pyc
+
+# macOS junk
+.DS_Store

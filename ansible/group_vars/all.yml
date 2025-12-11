@@ -1,0 +1,29 @@
+---
+# Paths
+media_mount_point: /mnt/media
+media_fs_type: ext4
+media_device_uuid: "e4f3e71b-c0c0-4011-8260-76a1b7d1d78a"
+media_mount_opts: "defaults,nofail,x-systemd.automount,x-systemd.device-timeout=5"
+
+# Base directory for containers on the Pi
+media_base_dir: /opt/media-stack
+
+# User and group that own media content and containers
+media_puid: 1000
+media_pgid: 1000
+
+# Docker Compose project
+media_stack_project_name: pi5_media_stack
+
+# Ports
+qbittorrent_webui_port: 8080
+audiobookshelf_port: 13378
+
+# qBittorrent paths under /mnt/media
+qbittorrent_downloads_dir: "{{ media_mount_point }}/downloads"
+audiobookshelf_library_dir: "{{ media_mount_point }}/audiobooks"
+
+# Container image references (ARM compatible)
+gluetun_image: "ghcr.io/qdm12/gluetun"
+qbittorrent_image: "lscr.io/linuxserver/qbittorrent"
+audiobookshelf_image: "ghcr.io/advplyr/audiobookshelf"

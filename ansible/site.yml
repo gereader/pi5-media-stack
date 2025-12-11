@@ -1,0 +1,9 @@
+---
+- name: Configure Pi 5 media stack
+  hosts: pi_media
+  become: true
+
+  roles:
+    - storage
+    - docker
+    - media_stack
